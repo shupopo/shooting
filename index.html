@@ -69,14 +69,22 @@
         let animationId;
         
         const enemyImage = new Image();
+        const heroImage = new Image();
         enemyImage.src = 'enemy.png';
-        let imageLoaded = false;
+        heroImage.src = 'hero.png';
+        let imagesLoaded = 0;
+        const totalImages = 2;
         
-        enemyImage.onload = function() {
-            imageLoaded = true;
-            gameState = 'playing';
-            gameLoop();
-        };
+        function checkAllImagesLoaded() {
+            imagesLoaded++;
+            if (imagesLoaded >= totalImages) {
+                gameState = 'playing';
+                gameLoop();
+            }
+        }
+        
+        enemyImage.onload = checkAllImagesLoaded;
+        heroImage.onload = checkAllImagesLoaded;
 
         const player = {
             x: canvas.width / 2 - 15,
@@ -244,15 +252,19 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = '#00ff00';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            if (imagesLoaded >= totalImages) {
+                ctx.drawImage(heroImage, player.x, player.y, player.width, player.height);
+            } else {
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+            }
 
             ctx.fillStyle = '#ffff00';
             bullets.forEach(bullet => {
                 ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
             });
 
-            if (imageLoaded) {
+            if (imagesLoaded >= totalImages) {
                 enemies.forEach(enemy => {
                     ctx.drawImage(enemyImage, enemy.x, enemy.y, enemy.width, enemy.height);
                 });
@@ -293,7 +305,7 @@
             gameLoop();
         }
 
-        if (imageLoaded) {
+        if (imagesLoaded >= totalImages) {
             gameState = 'playing';
             gameLoop();
         }
