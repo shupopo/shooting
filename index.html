@@ -46,6 +46,87 @@
             font-size: 14px;
             color: #ccc;
         }
+        
+        #mobileControls {
+            display: none;
+            margin-top: 20px;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #moveButtons {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(3, 60px);
+            gap: 5px;
+        }
+        
+        .moveBtn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        
+        .moveBtn:active, .moveBtn.active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0.95);
+        }
+        
+        #upBtn { grid-column: 2; grid-row: 1; }
+        #leftBtn { grid-column: 1; grid-row: 2; }
+        #rightBtn { grid-column: 3; grid-row: 2; }
+        #downBtn { grid-column: 2; grid-row: 3; }
+        
+        #shootBtn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 0, 0, 0.3);
+            border: 3px solid #ff0000;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        
+        #shootBtn:active, #shootBtn.active {
+            background: rgba(255, 0, 0, 0.6);
+            transform: scale(0.95);
+        }
+        
+        @media (max-width: 768px) {
+            #mobileControls {
+                display: flex;
+            }
+            
+            #instructions {
+                display: none;
+            }
+            
+            body {
+                padding: 10px;
+            }
+            
+            #gameCanvas {
+                max-width: 100vw;
+                max-height: 70vh;
+            }
+        }
     </style>
 </head>
 <body>
@@ -55,6 +136,15 @@
         <div id="gameOver">GAME OVER<br><small>Rキーでリスタート</small></div>
         <div id="instructions">
             方向キー: 移動 | スペース: 射撃 | R: リスタート
+        </div>
+        <div id="mobileControls">
+            <div id="moveButtons">
+                <div id="upBtn" class="moveBtn">↑</div>
+                <div id="leftBtn" class="moveBtn">←</div>
+                <div id="rightBtn" class="moveBtn">→</div>
+                <div id="downBtn" class="moveBtn">↓</div>
+            </div>
+            <div id="shootBtn">射撃</div>
         </div>
     </div>
 
@@ -87,10 +177,10 @@
         heroImage.onload = checkAllImagesLoaded;
 
         const player = {
-            x: canvas.width / 2 - 15,
+            x: canvas.width / 2 - 22.5,
             y: canvas.height - 50,
-            width: 30,
-            height: 30,
+            width: 45,
+            height: 45,
             speed: 5
         };
 
@@ -157,6 +247,86 @@
             }
         });
 
+        // Touch controls
+        function addTouchControls() {
+            const upBtn = document.getElementById('upBtn');
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+            const downBtn = document.getElementById('downBtn');
+            const shootBtn = document.getElementById('shootBtn');
+
+            // Movement buttons
+            upBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys.up = true;
+                upBtn.classList.add('active');
+            });
+            upBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys.up = false;
+                upBtn.classList.remove('active');
+            });
+
+            leftBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys.left = true;
+                leftBtn.classList.add('active');
+            });
+            leftBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys.left = false;
+                leftBtn.classList.remove('active');
+            });
+
+            rightBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys.right = true;
+                rightBtn.classList.add('active');
+            });
+            rightBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys.right = false;
+                rightBtn.classList.remove('active');
+            });
+
+            downBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys.down = true;
+                downBtn.classList.add('active');
+            });
+            downBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys.down = false;
+                downBtn.classList.remove('active');
+            });
+
+            // Shoot button
+            shootBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys.space = true;
+                shootBtn.classList.add('active');
+            });
+            shootBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys.space = false;
+                shootBtn.classList.remove('active');
+            });
+
+            // Also handle mouse events for testing on desktop
+            [upBtn, leftBtn, rightBtn, downBtn, shootBtn].forEach(btn => {
+                btn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    btn.dispatchEvent(new Event('touchstart'));
+                });
+                btn.addEventListener('mouseup', (e) => {
+                    e.preventDefault();
+                    btn.dispatchEvent(new Event('touchend'));
+                });
+            });
+        }
+
+        addTouchControls();
+
         function updatePlayer() {
             if (keys.left && player.x > 0) {
                 player.x -= player.speed;
@@ -201,10 +371,10 @@
             
             if (currentTime - lastEnemySpawn > 1000) {
                 enemies.push({
-                    x: Math.random() * (canvas.width - 30),
-                    y: -30,
-                    width: 30,
-                    height: 30,
+                    x: Math.random() * (canvas.width - 45),
+                    y: -45,
+                    width: 45,
+                    height: 45,
                     speed: 2 + Math.random() * 2
                 });
                 lastEnemySpawn = currentTime;
@@ -293,7 +463,7 @@
             scoreElement.textContent = `スコア: ${score}`;
             gameOverElement.style.display = 'none';
             
-            player.x = canvas.width / 2 - 15;
+            player.x = canvas.width / 2 - 22.5;
             player.y = canvas.height - 50;
             
             bullets.length = 0;
@@ -309,6 +479,11 @@
             gameState = 'playing';
             gameLoop();
         }
+
+        // Prevent scrolling on mobile when touching game area
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
     </script>
 </body>
 </html>
